@@ -1,4 +1,5 @@
 ﻿using GraphQL.Types;
+using TaskManager.Server.API.Users;
 
 namespace TaskManager.Server.API
 {
@@ -6,6 +7,7 @@ namespace TaskManager.Server.API
     {
         public RootMutation()
         {
+            Field<UserMutation>("users").Resolve(_ => new { });
         }
     }
 }

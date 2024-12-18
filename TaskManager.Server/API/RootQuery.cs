@@ -9,6 +9,8 @@ namespace TaskManager.Server.API
     {
         public RootQuery()
         {
+            Field<StringGraphType>("test")
+            .Resolve(context => "GraphQL is working!");
         }
     }
 }

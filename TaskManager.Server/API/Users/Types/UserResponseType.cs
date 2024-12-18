@@ -3,9 +3,9 @@ using TaskManager.Server.Domain.Entities;
 
 namespace TaskManager.Server.API.Users.Types
 {
-    public class UserType : ObjectGraphType<User>
+    public class UserResponseType : ObjectGraphType<User>
     {
-        public UserType()
+        public UserResponseType()
         {
             Field(x => x.Name).Description("The name of the user.");
             Field(x => x.Surname).Description("The surname of the user.");

@@ -1,7 +1,7 @@
 using GraphQL;
 using TaskManager.Server.API;
+using TaskManager.Server.Application;
 using TaskManager.Server.Infrastructure;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +10,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.AddGraphQL(options => options
     .AddSchema<APISchema>()
     .AddSystemTextJson()
+    //.AddValidationRule<AuthorizationRule>()
     //.AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)
     .AddGraphTypes(typeof(APISchema).Assembly)
     .AddDataLoader());
@@ -36,7 +38,6 @@ app.UseAuthorization();
 
 app.UseGraphQL<APISchema>();
 app.UseGraphQLAltair();
-
 
 app.MapControllers();
 

@@ -14,6 +14,7 @@ namespace TaskManager.Server.Infrastructure
             services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 
             services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
 
             //services.AddAuth(configuration);
 
