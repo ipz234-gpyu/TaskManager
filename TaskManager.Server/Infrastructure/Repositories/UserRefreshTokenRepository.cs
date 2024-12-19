@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using GraphQL.Types.Relay.DataObjects;
 using TaskManager.Server.Domain.Entities;
 using TaskManager.Server.Infrastructure.DataBase;
 using TaskManager.Server.Infrastructure.Interfaces;

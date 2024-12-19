@@ -1,5 +1,6 @@
 ﻿using GraphQL.Types;
 using TaskManager.Server.API.Auth;
+using TaskManager.Server.API.GroupsFromUser;
 using TaskManager.Server.API.Users;
 
 namespace TaskManager.Server.API
@@ -10,6 +11,7 @@ namespace TaskManager.Server.API
         {
             Field<UserMutation>("users").Resolve(_ => new { });
             Field<AuthMutation>("auth").Resolve(_ => new { });
+            Field<GroupsFromUserMutation>("groupsFromUser").Resolve(_ => new { });
         }
     }
 }

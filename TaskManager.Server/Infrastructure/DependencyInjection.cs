@@ -18,6 +18,7 @@ namespace TaskManager.Server.Infrastructure
 
             services.AddSingleton<IUserRepository, UserRepository>();
             services.AddSingleton<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
+            services.AddSingleton<IGroupsFromUserRepository, GroupsFromUserRepository>();
 
             services.AddAuth(configuration);
 

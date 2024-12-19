@@ -11,8 +11,7 @@ namespace TaskManager.Server.API.Users
 {
     public class UserMutation : ObjectGraphType
     {
-        public UserMutation(IUserRepository userRepository,
-            IUserRefreshTokenRepository userRefreshTokenRepository)
+        public UserMutation(IUserRepository userRepository)
         {
             Field<BooleanGraphType>("createUser")
                 .Arguments(new QueryArguments(new QueryArgument<CreateUserRequestType> { Name = "user" }))

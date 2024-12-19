@@ -7,6 +7,7 @@ namespace TaskManager.Server.API.Auth.Types
     {
         public LoginUserResponseType()
         {
+            Field(t => t.UserId);
             Field(t => t.Name);
             Field(t => t.Surname);
             Field(t => t.ProfilePhotoUrl);
