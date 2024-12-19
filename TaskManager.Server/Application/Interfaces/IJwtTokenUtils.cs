@@ -5,7 +5,7 @@ namespace TaskManager.Server.Application.Interfaces
 {
     public interface IJwtTokenUtils
     {
-        TokenResponse GenerateToken(Claim[] claims, int expireMinutes);
+        TokenResponse GenerateToken(Claim[] claims, DateTime expire);
         ClaimsPrincipal? ValidateToken(string token);
         TokenResponse GenerateAccessToken(Guid UserId);
         Task<TokenResponse> GenerateRefreshToken(Guid UserId, string deviceInfo);

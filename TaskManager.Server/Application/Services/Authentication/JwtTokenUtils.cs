@@ -31,14 +31,12 @@ namespace TaskManager.Server.Application.Services.Authentication
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public TokenResponse GenerateToken(Claim[] claims, int expireMinutes)
+        public TokenResponse GenerateToken(Claim[] claims, DateTime expires)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var expires = DateTime.Now.AddMinutes(expireMinutes);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -78,7 +76,7 @@ namespace TaskManager.Server.Application.Services.Authentication
         {
             var accessToken = GenerateToken(
                 [new(ClaimTypes.NameIdentifier, UserId.ToString())],
-                _jwtSettings.AccessTokenExpiryMinutes
+                DateTime.Now.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes)
             );
 
             return accessToken;
@@ -90,26 +88,26 @@ namespace TaskManager.Server.Application.Services.Authentication
 
             if (user == null)
                 throw new Exception();
-
-            var userRefreshToken = new UserRefreshToken()
+            var userRefreshToken = await _userRefreshTokenRepository.GetAsyncByUserIdDeviceInfo(UserId, deviceInfo);
+            if (userRefreshToken == null)
             {
-                UserId = user.UserId,
-                DeviceInfo = deviceInfo,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.RefreshTokenExpiryMinutes),
-                RefreshTokenHash = Convert.ToHexString(RandomNumberGenerator.GetBytes(16))
-            };
+                userRefreshToken = new UserRefreshToken()
+                {
+                    UserId = user.UserId,
+                    DeviceInfo = deviceInfo,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.RefreshTokenExpiryMinutes),
+                    RefreshTokenHash = Convert.ToHexString(RandomNumberGenerator.GetBytes(16))
+                };
 
-            userRefreshToken = await _userRefreshTokenRepository.CreateAsync(userRefreshToken);
-
-            var refreshToken = GenerateToken(
-                [
-                    new(ClaimTypes.NameIdentifier, userRefreshToken.ToString()),
-                    new("hash", userRefreshToken.RefreshTokenHash)
-                ],
-                _jwtSettings.RefreshTokenExpiryMinutes
-            );
-
-            return refreshToken;
+                userRefreshToken = await _userRefreshTokenRepository.CreateAsync(userRefreshToken);
+            }
+            return GenerateToken(
+                    [
+                        new(ClaimTypes.NameIdentifier, userRefreshToken.TokenId.ToString()),
+                        new("hash", userRefreshToken.RefreshTokenHash)
+                    ],
+                    userRefreshToken.ExpiresAt
+                    );
         }
 
         public async Task RevokeRefreshToken(Guid TokenId, string tokenHash)
