@@ -1,5 +1,6 @@
 using GraphQL;
 using TaskManager.Server.API;
+using TaskManager.Server.API.Helpers;
 using TaskManager.Server.Application;
 using TaskManager.Server.Infrastructure;
 
@@ -15,8 +16,8 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddGraphQL(options => options
     .AddSchema<APISchema>()
     .AddSystemTextJson()
-    //.AddValidationRule<AuthorizationRule>()
-    //.AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)
+    .AddValidationRule<AuthorizationRule>()
+    //.AddErrorInfoProvider(opt => opt.ExposeExceptionDetailsMode = GraphQL.Execution.ExposeExceptionDetailsMode.Message)
     .AddGraphTypes(typeof(APISchema).Assembly)
     .AddDataLoader());
 

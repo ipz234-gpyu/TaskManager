@@ -114,14 +114,10 @@ namespace TaskManager.Server.Application.Services.Authentication
         {
             var userRefreshToken = await _userRefreshTokenRepository.GetByIdAsync(TokenId);
             if (userRefreshToken == null)
-            {
                 throw new Exception();
-            }
 
             if (userRefreshToken.RefreshTokenHash != tokenHash)
-            {
                 throw new Exception();
-            }
 
             await _userRefreshTokenRepository.DeleteAsync(TokenId);
         }

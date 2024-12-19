@@ -1,5 +1,6 @@
 ﻿using GraphQL;
 using GraphQL.Types;
+using System.Security.Claims;
 using TaskManager.Server.API.Auth.Models;
 using TaskManager.Server.API.Auth.Types;
 using TaskManager.Server.Application.Interfaces;
@@ -56,6 +57,76 @@ namespace TaskManager.Server.API.Auth
                        accessToken,
                        refreshToken
                    );
+                });
+
+            Field<AuthorizeResponseType>("authorize")
+                .Arguments(new QueryArguments(new QueryArgument<StringGraphType> { Name = "refreshToken" }
+                ))
+                .ResolveAsync(async context =>
+                {
+                    try
+                    {
+                        var refreshToken = context.GetArgument<string>("refreshToken");
+
+                        var principal = jwtTokenUtils.ValidateToken(refreshToken);
+
+                        var refreshTokenHash = principal.FindFirst("hash")?.Value;
+
+                        var tokenIdClaim = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception();
+
+                        if (!Guid.TryParse(tokenIdClaim, out var tokenId))
+                            throw new Exception("Invalid TokenId format.");
+
+                        var token = await tokenRepository.GetByIdAsync(tokenId) ?? throw new Exception();
+
+                        var user = await userRepository.GetByIdAsync(token.UserId) ?? throw new Exception();
+
+                        if (user == null || token.RefreshTokenHash != refreshTokenHash)
+                            throw new Exception();
+
+                        var newAccessToken = jwtTokenUtils.GenerateAccessToken(user.UserId);
+
+                        return new AuthorizeResponse(
+                            user,
+                            newAccessToken
+                        );
+                    }
+                    catch
+                    {
+                        context.Errors.Add(ErrorCode.UNAUTHORIZED);
+                        return null;
+                    }
+                });
+
+            Field<BooleanGraphType>("logout")
+                .Arguments(new QueryArguments(
+                    new QueryArgument<StringGraphType> { Name = "refreshToken" }
+                ))
+                .ResolveAsync(async context =>
+                {
+                    try
+                    {
+                        var refreshToken = context.GetArgument<string>("refreshToken");
+
+                        var principal = jwtTokenUtils.ValidateToken(refreshToken);
+
+                        var tokenIdClaim = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception();
+
+                        if (!Guid.TryParse(tokenIdClaim, out var tokenId))
+                            throw new Exception("Invalid TokenId format.");
+
+                        var refreshTokenHash = principal.FindFirst("hash")?.Value;
+
+                        await jwtTokenUtils.RevokeRefreshToken(tokenId, refreshTokenHash);
+
+                        return true;
+                    }
+                    catch
+                    {
+                        context.Errors.Add(ErrorCode.UNAUTHORIZED);
+
+                        return null;
+                    }
                 });
         }
     }
