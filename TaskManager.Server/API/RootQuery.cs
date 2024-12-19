@@ -1,7 +1,6 @@
 ﻿using GraphQL;
 using GraphQL.Types;
-using TaskManager.Server.API.Users.Types;
-using TaskManager.Server.Infrastructure.Interfaces;
+using TaskManager.Server.API.GroupsFromUser;
 
 namespace TaskManager.Server.API
 {
@@ -9,8 +8,7 @@ namespace TaskManager.Server.API
     {
         public RootQuery()
         {
-            Field<StringGraphType>("test")
-            .Resolve(context => "GraphQL is working!");
+            Field<GroupsFromUserQuery>("groupsFromUser").Resolve(_ => new { });
         }
     }
 }

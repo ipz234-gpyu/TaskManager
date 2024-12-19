@@ -16,7 +16,7 @@ namespace TaskManager.Server.API.GroupsFromUser
                 .Arguments(new QueryArguments(
                     new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "userId" },
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
-                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "priority"}
+                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "priority" }
                     ))
                 .ResolveAsync(async context => {
                     var userId = context.GetArgument<Guid>("userId");
@@ -31,6 +31,36 @@ namespace TaskManager.Server.API.GroupsFromUser
                     };
 
                     return await groupsFromUserRepository.CreateAsync(groupsFromUser);
+                });
+
+            Field<GroupFromUserResponsType>("updateGroupFromUser")
+               .Arguments(new QueryArguments(
+                   new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupFromUserId" },
+                   new QueryArgument<StringGraphType> { Name = "name" },
+                   new QueryArgument<IntGraphType> { Name = "priority" }
+                   ))
+               .ResolveAsync(async context => {
+                   var groupFromUserId = context.GetArgument<Guid>("groupFromUserId");
+                   var nameGroup = context.GetArgument<string>("name");
+                   var priority = context.GetArgument<int?>("priority", null);
+
+                   var groupsFromUser = await groupsFromUserRepository.GetByIdAsync(groupFromUserId);
+
+                   groupsFromUser.Name = nameGroup ?? groupsFromUser.Name;
+                   groupsFromUser.Priority = priority ?? groupsFromUser.Priority;
+
+                   return await groupsFromUserRepository.UpdateAsync(groupsFromUser);
+               });
+
+            Field<BooleanGraphType>("deleteGroupFromUser")
+                .Arguments(new QueryArguments(
+                    new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupFromUserId" }
+                    ))
+                .ResolveAsync(async context => {
+                    var groupFromUserId = context.GetArgument<Guid>("groupFromUserId");
+                   
+                    await groupsFromUserRepository.DeleteAsync(groupFromUserId);
+                    return true;
                 });
         }
     }
