@@ -27,7 +27,7 @@ namespace TaskManager.Server.API.GroupsFromUser
                     ))
                 .ResolveAsync(async context =>
                 {
-                    var groupFromUserId = context.GetArgument<Guid>("userId");
+                    var groupFromUserId = context.GetArgument<Guid>("groupFromUserId");
                     return await groupsFromUserRepository.GetByIdAsync(groupFromUserId);
                 });
         }

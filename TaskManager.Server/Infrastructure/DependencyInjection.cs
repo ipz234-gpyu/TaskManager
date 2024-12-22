@@ -19,6 +19,7 @@ namespace TaskManager.Server.Infrastructure
             services.AddSingleton<IUserRepository, UserRepository>();
             services.AddSingleton<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
             services.AddSingleton<IGroupsFromUserRepository, GroupsFromUserRepository>();
+            services.AddSingleton<IGroupsFromTeamRepository, GroupsFromTeamRepository>();
             services.AddSingleton<IListRepository, ListRepository>();
             services.AddSingleton<ITaskRepository, TaskRepository>();
             services.AddSingleton<ITeamRepository, TeamRepository>();

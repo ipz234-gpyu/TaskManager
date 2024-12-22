@@ -29,9 +29,4 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="API\GroupsFromUser\Models\" />
-    <Folder Include="API\Teams\Models\" />
-  </ItemGroup>
-
 </Project>
