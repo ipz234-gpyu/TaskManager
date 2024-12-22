@@ -12,6 +12,12 @@ namespace TaskManager.Server.Domain.Errors
 
         public static readonly ValidationError USER_NOT_FOUND = new Error("User is not found");
 
+        public static readonly ValidationError TEAM_NOT_FOUND = new Error("Team is not found");
+
+        public static readonly ValidationError USER_ALREADY_IN_THE_TEAM = new Error("User already in the team");
+
+        public static readonly ValidationError USER_HAS_ALREADY_BEEN_INVITED = new Error("User has already been invited");
+
         public static readonly ValidationError EMAIL_EXIST = new Error("This email is already registered");
 
         public static readonly ValidationError INVALID_PASSWORD_LENGTH = new Error("Password must be between 8 and 20 characters");

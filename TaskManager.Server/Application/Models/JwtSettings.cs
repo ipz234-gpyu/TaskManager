@@ -7,5 +7,6 @@
         public string Audience { get; set; }
         public int AccessTokenExpiryMinutes { get; set; }
         public int RefreshTokenExpiryMinutes { get; set; }
+        public int InviteTokenExpiryMinutes { get; set; }
     }
 }

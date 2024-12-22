@@ -8,6 +8,7 @@ using TaskManager.Server.Application.Interfaces;
 using TaskManager.Server.Application.Models;
 using TaskManager.Server.Domain.Entities;
 using TaskManager.Server.Infrastructure.Interfaces;
+using TaskManager.Server.Infrastructure.Repositories;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Server.Application.Services.Authentication
@@ -17,17 +18,23 @@ namespace TaskManager.Server.Application.Services.Authentication
         private readonly JwtSettings _jwtSettings;
         private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ITeamRepository _teamRepository;
+        private readonly ITeamInvitationRepository _invitationRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public JwtTokenUtils(
             IOptions<JwtSettings> jwtOptions,
             IUserRefreshTokenRepository userRefreshTokenRepository,
             IUserRepository userRepository,
+            ITeamRepository teamRepository,
+            ITeamInvitationRepository invitationRepository,
             IHttpContextAccessor httpContextAccessor)
         {
             _jwtSettings = jwtOptions.Value;
             _userRefreshTokenRepository = userRefreshTokenRepository;
             _userRepository = userRepository;
+            _teamRepository = teamRepository;
+            _invitationRepository = invitationRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -110,6 +117,37 @@ namespace TaskManager.Server.Application.Services.Authentication
                     );
         }
 
+        public async Task<TokenResponse> GenerateInviteToken(Guid TeamId, Guid UserId)
+        {
+            var user = await _userRepository.GetByIdAsync(UserId);
+            var team = await _teamRepository.GetByIdAsync(TeamId);
+
+            if (user == null || team == null)
+                throw new Exception();
+
+            var inviteToken = await _invitationRepository.GetByUserIdAndTeamId(TeamId, UserId);
+
+            if (inviteToken == null)
+            {
+                inviteToken = new TeamInvitation()
+                {
+                    UserId = user.UserId,
+                    TeamId = team.TeamId,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.InviteTokenExpiryMinutes),
+                    TokenHash = Convert.ToHexString(RandomNumberGenerator.GetBytes(16))
+                };
+
+                inviteToken = await _invitationRepository.CreateAsync(inviteToken);
+            }
+            return GenerateToken(
+                    [
+                        new(ClaimTypes.NameIdentifier, inviteToken.TeamInvitationId.ToString()),
+                        new("hash", inviteToken.TokenHash)
+                    ],
+                    inviteToken.ExpiresAt
+                    );
+        }
+
         public async Task RevokeRefreshToken(Guid TokenId, string tokenHash)
         {
             var userRefreshToken = await _userRefreshTokenRepository.GetByIdAsync(TokenId);
@@ -120,6 +158,11 @@ namespace TaskManager.Server.Application.Services.Authentication
                 throw new Exception();
 
             await _userRefreshTokenRepository.DeleteAsync(TokenId);
+        }
+
+        public Task ValidateInviteToken(string token, out Guid teamId, out Guid inviterId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace TaskManager.Server.Infrastructure.Repositories
         {
         }
 
-        public async Task<UserRefreshToken> GetAsyncByUserIdDeviceInfo(Guid userId, string deviceInfo)
+        public async virtual Task<UserRefreshToken> GetAsyncByUserIdDeviceInfo(Guid userId, string deviceInfo)
         {
             using var connection = _connectionFactory.Create();
             const string sql = @"
@@ -19,8 +19,26 @@ namespace TaskManager.Server.Infrastructure.Repositories
                 FROM [UserRefreshTokens]
                 WHERE [UserId] = @UserId AND [DeviceInfo] = @DeviceInfo";
 
-           return await connection.QuerySingleOrDefaultAsync<UserRefreshToken>(sql,
-                new { UserId = userId, DeviceInfo = deviceInfo });
+            return await connection.QuerySingleOrDefaultAsync<UserRefreshToken>(sql,
+                 new { UserId = userId, DeviceInfo = deviceInfo });
+        }
+
+        public override async Task<UserRefreshToken> CreateAsync(UserRefreshToken entity)
+        {
+            using var connection = _connectionFactory.Create();
+            const string sql = @"
+                INSERT UserRefreshTokens (UserId, RefreshTokenHash, ExpiresAt, DeviceInfo)
+                VALUES (@UserId, @RefreshTokenHash, @ExpiresAt, @DeviceInfo)
+                ";
+
+            var parameterValues = new DynamicParameters();
+            parameterValues.Add("@UserId", entity.UserId);
+            parameterValues.Add("@RefreshTokenHash", entity.RefreshTokenHash);
+            parameterValues.Add("@ExpiresAt", entity.ExpiresAt);
+            parameterValues.Add("@DeviceInfo", entity.DeviceInfo);
+
+            await connection.ExecuteAsync(sql, parameterValues);
+            return await GetAsyncByUserIdDeviceInfo(entity.UserId, entity.DeviceInfo);
         }
     }
 }
