@@ -30,5 +30,7 @@ namespace TaskManager.Server.Domain.Errors
 
         public static readonly ValidationError LINK_NOT_FOUND = new Error("Link not found");
 
+        public static readonly ValidationError ACCESS_RIGHTS_ERROR = new Error("Access rights error");
+
     }
 }

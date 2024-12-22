@@ -2,6 +2,7 @@
 using TaskManager.Server.Domain.Entities;
 using TaskManager.Server.Infrastructure.DataBase;
 using TaskManager.Server.Infrastructure.Interfaces;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Server.Infrastructure.Repositories
 {
@@ -27,5 +28,22 @@ namespace TaskManager.Server.Infrastructure.Repositories
 
             return await connection.QuerySingleOrDefaultAsync<UserTeam>(sql, parameters);
         }
+
+        public virtual async Task DeleteByUserIdAndTeamId(Guid teamId, Guid userId)
+        {
+            using var connection = _connectionFactory.Create();
+            const string sql = @"
+            DELETE FROM UserTeams
+            WHERE TeamId = @TeamId
+            AND UserId = @UserId
+            ";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@TeamId", teamId);
+            parameters.Add("@UserId", userId);
+
+            await connection.ExecuteAsync(sql, parameters);
+        }
+
     }
 }
