@@ -14,5 +14,10 @@ namespace TaskManager.Server.Application.Services
         {
             return !(password is null || password.Length < 8 || password.Length > 20);
         }
+
+        public static bool IsTimeInFuture(long? time)
+        {
+            return time > new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
+        }
     }
 }

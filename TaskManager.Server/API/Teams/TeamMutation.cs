@@ -1,5 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Types;
+using System.Security.Claims;
+using TaskManager.Server.API.Teams.Types;
 using TaskManager.Server.Application.Interfaces;
 using TaskManager.Server.Application.Services;
 using TaskManager.Server.Domain.Errors;
@@ -19,8 +21,8 @@ namespace TaskManager.Server.API.Teams
         {
             Field<BooleanGraphType>("inviteToTeam")
                 .Arguments(new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "UserEmail" },
-                    new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "TeamId" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "userEmail" },
+                    new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "teamId" }
                 ))
                 .ResolveAsync(async context =>
                 {
@@ -38,7 +40,7 @@ namespace TaskManager.Server.API.Teams
                         return false;
                     }
 
-                    var teamId = context.GetArgument<Guid>("TeamId");
+                    var teamId = context.GetArgument<Guid>("teamId");
                     var team = await teamRepository.GetByIdAsync(teamId);
                     if (team == null)
                     {
@@ -66,6 +68,44 @@ namespace TaskManager.Server.API.Teams
 
                     return true;
                 });
+
+            base.Field<TeamResponsType>("acceptInviteToTeam")
+                 .Arguments(new QueryArguments(
+                    new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "userId" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "token" }
+                ))
+                 .ResolveAsync(async context => {
+                     try
+                     {
+                         var token = context.GetArgument<string>("token");
+
+                         var principal = jwtTokenUtils.ValidateToken(token);
+
+                         var tokenHash = principal.FindFirst("hash")?.Value;
+
+                         var tokenIdClaim = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception();
+
+                         if (!Guid.TryParse(tokenIdClaim, out var tokenId))
+                             throw new Exception("Invalid TokenId format.");
+
+                         var tokenInvite = await tokenRepository.GetByIdAsync(tokenId) ?? throw new Exception();
+                         var user = await userRepository.GetByIdAsync(tokenInvite.UserId) ?? throw new Exception();
+                         var team = await teamRepository.GetByIdAsync(tokenInvite.TeamId) ?? throw new Exception();
+
+                         if (user.UserId != tokenInvite.UserId || tokenInvite.TokenHash != tokenHash)
+                             throw new Exception();
+
+                         await userTeamRepository.CreateAsync(new() { UserId = user.UserId, TeamId = team.TeamId});
+                         await tokenRepository.DeleteAsync(tokenInvite.TeamInvitationId);
+
+                         return team;
+                     }
+                     catch
+                     {
+                         context.Errors.Add(ErrorCode.LINK_NOT_FOUND);
+                         return null;
+                     }
+                 });
         }
     }
 }
