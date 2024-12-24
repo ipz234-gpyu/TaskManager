@@ -32,5 +32,9 @@ namespace TaskManager.Server.Domain.Errors
 
         public static readonly ValidationError ACCESS_RIGHTS_ERROR = new Error("Access rights error");
 
+        public static readonly ValidationError GROUP_NOT_FOUND = new Error("Group not found");
+
+        public static readonly ValidationError LIST_NOT_FOUND = new Error("List not found");
+
     }
 }

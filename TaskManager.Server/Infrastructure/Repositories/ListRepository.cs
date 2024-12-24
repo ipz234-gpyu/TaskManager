@@ -2,6 +2,7 @@
 using TaskManager.Server.Domain.Entities;
 using TaskManager.Server.Infrastructure.DataBase;
 using TaskManager.Server.Infrastructure.Interfaces;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Server.Infrastructure.Repositories
 {
@@ -69,6 +70,66 @@ namespace TaskManager.Server.Infrastructure.Repositories
             parameters.Add("@GroupId", groupId);
 
             return await connection.QueryAsync<List>(sql, parameters);
+        }
+
+        public async virtual Task CreateConnectionForUser(Guid groupId, Guid listId)
+        {
+            using var connection = _connectionFactory.Create();
+            var sql = @"     
+                INSERT GroupListsFromUser (GroupsFromUserId, ListId)
+                VALUES (@GroupId, @ListId)
+            ";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@GroupId", groupId);
+            parameters.Add("@ListId", listId);
+
+            await connection.ExecuteAsync(sql, parameters);
+        }
+
+        public async virtual Task CreateConnectionForTeam(Guid groupId, Guid listId)
+        {
+            using var connection = _connectionFactory.Create();
+            var sql = @"     
+                INSERT GroupListsFromTeam (GroupsFromTeamId, ListId)
+                VALUES (@GroupId, @ListId)
+            ";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@GroupId", groupId);
+            parameters.Add("@ListId", listId);
+
+            await connection.ExecuteAsync(sql, parameters);
+        }
+
+        public async virtual Task DeleteConnectionForUser(Guid groupId, Guid listId)
+        {
+            using var connection = _connectionFactory.Create();
+            var sql = @"     
+                DELETE FROM GroupListsFromUser
+                WHERE GroupsFromUserId = @GroupId AND ListId = @ListId;
+            ";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@GroupId", groupId);
+            parameters.Add("@ListId", listId);
+
+            await connection.ExecuteAsync(sql, parameters);
+        }
+
+        public async virtual Task DeleteConnectionForTeam(Guid groupId, Guid listId)
+        {
+            using var connection = _connectionFactory.Create();
+            var sql = @"     
+                DELETE FROM GroupListsFromTeam
+                WHERE GroupsFromTeamId = @GroupId AND ListId = @ListId;
+            ";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@GroupId", groupId);
+            parameters.Add("@ListId", listId);
+
+            await connection.ExecuteAsync(sql, parameters);
         }
     }
 }
