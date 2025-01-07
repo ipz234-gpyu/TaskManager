@@ -1,8 +1,7 @@
-﻿namespace TaskManager.Server.Application.Models
+﻿namespace TaskManager.Server.Application.Models;
+
+public class HashPasswordResponse
 {
-    public class HashPasswordResponse
-    {
-        public string Password { get; set; }
-        public string Salt { get; set; }
-    }
+    public string Password { get; set; }
+    public string Salt { get; set; }
 }

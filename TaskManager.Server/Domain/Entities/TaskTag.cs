@@ -1,11 +1,10 @@
 ﻿using TaskManager.Server.Infrastructure.Attributes;
 
-namespace TaskManager.Server.Domain.Entities
+namespace TaskManager.Server.Domain.Entities;
+
+[TableName("TaskTag")]
+public class TaskTag
 {
-    [TableName("TaskTag")]
-    public class TaskTag
-    {
-        public Guid TaskId { get; set; }
-        public Guid TagId { get; set; }
-    }
+    public Guid TaskId { get; set; }
+    public Guid TagId { get; set; }
 }

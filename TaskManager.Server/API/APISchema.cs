@@ -1,13 +1,12 @@
 ﻿using GraphQL.Types;
 
-namespace TaskManager.Server.API
+namespace TaskManager.Server.API;
+
+public class APISchema : Schema
 {
-    public class APISchema : Schema
+    public APISchema(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        public APISchema(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-            Query = serviceProvider.GetRequiredService<RootQuery>();
-            Mutation = serviceProvider.GetRequiredService<RootMutation>();
-        }
+        Query = serviceProvider.GetRequiredService<RootQuery>();
+        Mutation = serviceProvider.GetRequiredService<RootMutation>();
     }
 }

@@ -2,11 +2,10 @@
 using TaskManager.Server.Domain.Entities;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskManager.Server.Application.Interfaces
+namespace TaskManager.Server.Application.Interfaces;
+
+public interface IEmailSender
 {
-    public interface IEmailSender
-    {
-        Task SendEmailAsync(string email, string subject, string message);
-        Task SendInviteToTeamEmailAsync(TokenResponse token, User user, Team team);
-    }
+    Task SendEmailAsync(string email, string subject, string message);
+    Task SendInviteToTeamEmailAsync(TokenResponse token, User user, Team team);
 }

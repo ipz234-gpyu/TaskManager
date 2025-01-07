@@ -1,21 +1,21 @@
 ﻿using GraphQL;
 using GraphQL.Types;
-using TaskManager.Server.API.Teams.Types;
+using TaskManager.Server.API.Tags.Types;
 using TaskManager.Server.Domain.Errors;
 using TaskManager.Server.Infrastructure.Interfaces;
 
-namespace TaskManager.Server.API.Teams;
+namespace TaskManager.Server.API.Tags;
 
-public class TeamQuery : ObjectGraphType
+public class TagQuery : ObjectGraphType
 {
-    public TeamQuery(ITeamRepository teamRepository, IUserRepository userRepository)
+    public TagQuery(ITagRepository tagRepository, IUserRepository userRepository, ITeamRepository teamRepository)
     {
         this.Authorize();
 
-        Field<ListGraphType<TeamResponsType>>("getAllGroupFromUser")
-            .Arguments(new QueryArguments(
-                new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "userId" }
-                ))
+        Field<ListGraphType<TagResponsType>>("getAllTagsForUser")
+           .Arguments(new QueryArguments(
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "userId" }
+               ))
         .ResolveAsync(async context =>
         {
             var userId = context.GetArgument<Guid>("userId");
@@ -25,13 +25,14 @@ public class TeamQuery : ObjectGraphType
                 context.Errors.Add(ErrorCode.USER_NOT_FOUND);
                 return false;
             }
-            return await teamRepository.GetAllByUserId(user.UserId);
-        });
 
-        Field<ListGraphType<TaskAssignmentResponsType>>("getAllTaskAssignments")
-         .Arguments(new QueryArguments(
-                new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "teamId" }
-                ))
+            return await tagRepository.GetAllForUser(user.UserId);
+           });
+
+        Field<ListGraphType<TagResponsType>>("getAllTagsForTeam")
+           .Arguments(new QueryArguments(
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "teamId" }
+               ))
         .ResolveAsync(async context =>
         {
             var teamId = context.GetArgument<Guid>("teamId");
@@ -42,7 +43,7 @@ public class TeamQuery : ObjectGraphType
                 return null;
             }
 
-            return await teamRepository.GetAllTaskAssignments(teamId);
-        });
+            return await tagRepository.GetAllForTeam(team.TeamId);
+           });
     }
 }

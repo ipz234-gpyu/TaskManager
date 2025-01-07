@@ -1,12 +1,11 @@
-﻿namespace TaskManager.Server.Infrastructure.Attributes
-{
-    public class ColumnIdNameAttribute : Attribute
-    {
-        public string ColumnIdName { get; init; }
+﻿namespace TaskManager.Server.Infrastructure.Attributes;
 
-        public ColumnIdNameAttribute(string columnIdName)
-        {
-            ColumnIdName = columnIdName;
-        }
+public class ColumnIdNameAttribute : Attribute
+{
+    public string ColumnIdName { get; init; }
+
+    public ColumnIdNameAttribute(string columnIdName)
+    {
+        ColumnIdName = columnIdName;
     }
 }

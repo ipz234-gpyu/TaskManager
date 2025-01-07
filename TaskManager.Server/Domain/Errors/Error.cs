@@ -1,13 +1,12 @@
 ﻿using GraphQL.Validation;
 using System.Runtime.CompilerServices;
 
-namespace TaskManager.Server.Domain.Errors
+namespace TaskManager.Server.Domain.Errors;
+
+public class Error : ValidationError
 {
-    public class Error : ValidationError
+    public Error(string message, [CallerMemberName] string code = "UNKNOWN_ERROR") : base(message)
     {
-        public Error(string message, [CallerMemberName] string code = "UNKNOWN_ERROR") : base(message)
-        {
-            Code = code;
-        }
+        Code = code;
     }
 }

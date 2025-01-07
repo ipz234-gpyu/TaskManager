@@ -1,9 +1,8 @@
 ﻿using System.Data;
 
-namespace TaskManager.Server.Infrastructure.DataBase
+namespace TaskManager.Server.Infrastructure.DataBase;
+
+public interface ISqlConnectionFactory
 {
-    public interface ISqlConnectionFactory
-    {
-        IDbConnection Create();
-    }
+    IDbConnection Create();
 }

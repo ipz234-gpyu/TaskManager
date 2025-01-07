@@ -1,20 +1,19 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 
-namespace TaskManager.Server.Infrastructure.DataBase
+namespace TaskManager.Server.Infrastructure.DataBase;
+
+public class SqlConnectionFactory : ISqlConnectionFactory
 {
-    public class SqlConnectionFactory : ISqlConnectionFactory
+    private readonly IConfiguration _configuration;
+
+    public SqlConnectionFactory(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public SqlConnectionFactory(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        public IDbConnection Create()
-        {
-            return new SqlConnection(_configuration.GetConnectionString("DbConnection"));
-        }
+    public IDbConnection Create()
+    {
+        return new SqlConnection(_configuration.GetConnectionString("DbConnection"));
     }
 }

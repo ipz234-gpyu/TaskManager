@@ -1,9 +1,8 @@
 ﻿using TaskManager.Server.Domain.Entities;
 
-namespace TaskManager.Server.Infrastructure.Interfaces
+namespace TaskManager.Server.Infrastructure.Interfaces;
+
+public interface IUserRepository : IRepository<User>
 {
-    public interface IUserRepository : IRepository<User>
-    {
-        Task<User> GetUserByEmailAsync(string email);
-    }
+    Task<User> GetUserByEmailAsync(string email);
 }

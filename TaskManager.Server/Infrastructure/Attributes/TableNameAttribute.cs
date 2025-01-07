@@ -1,12 +1,11 @@
-﻿namespace TaskManager.Server.Infrastructure.Attributes
-{
-    public class TableNameAttribute : Attribute
-    {
-        public string TableName { get; init; }
+﻿namespace TaskManager.Server.Infrastructure.Attributes;
 
-        public TableNameAttribute(string tableName)
-        {
-            TableName = tableName;
-        }
+public class TableNameAttribute : Attribute
+{
+    public string TableName { get; init; }
+
+    public TableNameAttribute(string tableName)
+    {
+        TableName = tableName;
     }
 }
