@@ -24,7 +24,7 @@ public class ListMutation : ObjectGraphType
            .ResolveAsync(async context => {
                var groupId = context.GetArgument<Guid>("groupId");
                var group = await fromUserRepository.GetByIdAsync(groupId);
-               if(group == null)
+               if (group == null)
                {
                    context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
                    return null;
@@ -101,16 +101,15 @@ public class ListMutation : ObjectGraphType
                 return true;
             });
 
-        Field<BooleanGraphType>("MoveUserListTo")
+        Field<BooleanGraphType>("removeListFromUserGroup")
            .Arguments(new QueryArguments(
-               new QueryArgument<GuidGraphType> { Name = "removedGroupId" },
-               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "addGroupId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupId" },
                new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" }
                ))
            .ResolveAsync(async context => {
-               var addGroupId = context.GetArgument<Guid>("addGroupId");
-               var addGroup = await fromUserRepository.GetByIdAsync(addGroupId);
-               if (addGroup == null)
+               var groupId = context.GetArgument<Guid>("groupId");
+               var group = await fromUserRepository.GetByIdAsync(groupId);
+               if (group == null)
                {
                    context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
                    return false;
@@ -123,34 +122,21 @@ public class ListMutation : ObjectGraphType
                    context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
                    return false;
                }
-
-               await listRepository.CreateConnectionForUser(addGroup.GroupsFromUserId, list.ListId);
-
-               var removedGroupId = context.GetArgument<Guid?>("removedGroupId");
-               if (removedGroupId.HasValue)
-               {
-                   var removedGroup = await fromUserRepository.GetByIdAsync(removedGroupId.Value);
-                   if (removedGroup == null || addGroup.GroupsFromUserId == removedGroup.GroupsFromUserId)
-                   {
-                       context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
-                       return false;
-                   }
-                   else await listRepository.DeleteConnectionForUser(removedGroup.GroupsFromUserId, list.ListId);
-               }
+               
+               await listRepository.DeleteConnectionForUser(group.GroupsFromUserId, list.ListId);
 
                return true;
            });
 
-        Field<BooleanGraphType>("MoveTeamListTo")
+        Field<BooleanGraphType>("addListForUserGroup")
            .Arguments(new QueryArguments(
-               new QueryArgument<GuidGraphType> { Name = "removedGroupId" },
-               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "addGroupId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupId" },
                new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" }
                ))
            .ResolveAsync(async context => {
-               var addGroupId = context.GetArgument<Guid>("addGroupId");
-               var addGroup = await fromTeamRepository.GetByIdAsync(addGroupId);
-               if (addGroup == null)
+               var groupId = context.GetArgument<Guid>("groupId");
+               var group = await fromUserRepository.GetByIdAsync(groupId);
+               if (group == null)
                {
                    context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
                    return false;
@@ -164,19 +150,61 @@ public class ListMutation : ObjectGraphType
                    return false;
                }
 
-               await listRepository.CreateConnectionForTeam(addGroup.GroupsFromTeamId, list.ListId);
+               await listRepository.CreateConnectionForUser(group.GroupsFromUserId, list.ListId);
 
-               var removedGroupId = context.GetArgument<Guid?>("removedGroupId");
-               if (removedGroupId.HasValue)
+               return true;
+           });
+
+        Field<BooleanGraphType>("removeListFromTeamGroup")
+           .Arguments(new QueryArguments(
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" }
+               ))
+           .ResolveAsync(async context => {
+               var groupId = context.GetArgument<Guid>("groupId");
+               var group = await fromTeamRepository.GetByIdAsync(groupId);
+               if (group == null)
                {
-                   var removedGroup = await fromTeamRepository.GetByIdAsync(removedGroupId.Value);
-                   if (removedGroup == null || addGroup.GroupsFromTeamId == removedGroup.GroupsFromTeamId)
-                   {
-                       context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
-                       return false;
-                   }
-                   else await listRepository.DeleteConnectionForTeam(removedGroup.GroupsFromTeamId, list.ListId);
+                   context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
+                   return false;
                }
+
+               var listId = context.GetArgument<Guid>("listId");
+               var list = await listRepository.GetByIdAsync(listId);
+               if (list == null)
+               {
+                   context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
+                   return false;
+               }
+
+               await listRepository.DeleteConnectionForTeam(group.GroupsFromTeamId, list.ListId);
+
+               return true;
+           });
+
+        Field<BooleanGraphType>("addListForTeamGroup")
+           .Arguments(new QueryArguments(
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "groupId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" }
+               ))
+           .ResolveAsync(async context => {
+               var groupId = context.GetArgument<Guid>("groupId");
+               var group = await fromTeamRepository.GetByIdAsync(groupId);
+               if (group == null)
+               {
+                   context.Errors.Add(ErrorCode.GROUP_NOT_FOUND);
+                   return false;
+               }
+
+               var listId = context.GetArgument<Guid>("listId");
+               var list = await listRepository.GetByIdAsync(listId);
+               if (list == null)
+               {
+                   context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
+                   return false;
+               }
+
+               await listRepository.CreateConnectionForTeam(group.GroupsFromTeamId, list.ListId);
 
                return true;
            });
