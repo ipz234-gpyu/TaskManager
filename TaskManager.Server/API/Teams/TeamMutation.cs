@@ -1,5 +1,6 @@
 ﻿using GraphQL;
 using GraphQL.Types;
+using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using TaskManager.Server.API.Teams.Types;
 using TaskManager.Server.Application.Interfaces;
@@ -101,7 +102,7 @@ public class TeamMutation : ObjectGraphType
 
                 var token = await jwtTokenUtils.GenerateInviteToken(team.TeamId, user.UserId);
                 var emailSender = context.RequestServices.GetRequiredService<IEmailSender>();
-                await emailSender.SendInviteToTeamEmailAsync(token, user, team);
+                await emailSender.InviteToTeamEmailSendAsync(token, user, team);
 
                 return true;
             });
