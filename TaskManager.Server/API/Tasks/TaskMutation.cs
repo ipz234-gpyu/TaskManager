@@ -71,16 +71,15 @@ public class TaskMutation : ObjectGraphType
               return true;
           });
 
-        Field<BooleanGraphType>("moveTaskTo")
+        Field<BooleanGraphType>("addTaskToList")
            .Arguments(new QueryArguments(
-               new QueryArgument<GuidGraphType> { Name = "removedListId" },
-               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "addListId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" },
                new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "taskId" }
                ))
            .ResolveAsync(async context => {
-               var addListId = context.GetArgument<Guid>("addListId");
-               var addList = await listRepository.GetByIdAsync(addListId);
-               if (addList == null)
+               var listId = context.GetArgument<Guid>("listId");
+               var list = await listRepository.GetByIdAsync(listId);
+               if (list == null)
                {
                    context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
                    return false;
@@ -94,19 +93,34 @@ public class TaskMutation : ObjectGraphType
                    return false;
                }
 
-               await taskRepository.CreateConnection(addList.ListId, task.TaskId);
+               await taskRepository.CreateConnection(list.ListId, task.TaskId);
 
-               var removedListId = context.GetArgument<Guid?>("removedListId");
-               if (removedListId.HasValue)
+               return true;
+           });
+
+        Field<BooleanGraphType>("removeTaskFromList")
+           .Arguments(new QueryArguments(
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "listId" },
+               new QueryArgument<NonNullGraphType<GuidGraphType>> { Name = "taskId" }
+               ))
+           .ResolveAsync(async context => {
+               var listId = context.GetArgument<Guid>("listId");
+               var list = await listRepository.GetByIdAsync(listId);
+               if (list == null)
                {
-                   var removedList = await listRepository.GetByIdAsync(removedListId.Value);
-                   if (removedList == null || addList.ListId == removedList.ListId)
-                   {
-                       context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
-                       return false;
-                   }
-                   else await taskRepository.DeleteConnection(removedList.ListId, task.TaskId);
+                   context.Errors.Add(ErrorCode.LIST_NOT_FOUND);
+                   return false;
                }
+
+               var taskId = context.GetArgument<Guid>("taskId");
+               var task = await taskRepository.GetByIdAsync(taskId);
+               if (task == null)
+               {
+                   context.Errors.Add(ErrorCode.TASK_NOT_FOUND);
+                   return false;
+               }
+
+               await taskRepository.DeleteConnection(list.ListId, task.TaskId);
 
                return true;
            });
