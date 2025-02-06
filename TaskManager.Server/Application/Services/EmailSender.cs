@@ -21,8 +21,8 @@ public class EmailSender : IEmailSender
 
     public async Task SendEmailAsync(string email, string subject, string message)
     {
-        string fromEmail = "timetrackersana@gmail.com";
-        string fromPassword = "ddss ldya nusv suzm";
+        string fromEmail = _configuration.GetValue<string>("EmailSettings:FromEmail");
+        string fromPassword = _configuration.GetValue<string>("EmailSettings:FromPassword");
 
         var client = new SmtpClient("smtp.gmail.com")
         {
